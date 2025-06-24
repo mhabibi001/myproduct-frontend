@@ -1,11 +1,16 @@
   import React, { useEffect, useState } from 'react';
   import axios from '../api/axios';
   import Layout from '../components/Layout';
+  import Button from 'react-bootstrap/Button';
+  import Card from 'react-bootstrap/Card';
+  import Form from 'react-bootstrap/Form';
 
   function ProductListPage() {
     const [products, setProducts] = useState([]);
     const [name, setName] = useState('');
     const [error, setError] = useState('');
+    const [editProductId, setEditProductId] = useState(null);
+    const [editedName, setEditedName] = useState('');
 
     const fetchProducts = async () => {
       try {
@@ -39,6 +44,18 @@
       }
     };
 
+    const handleEdit = (product) => {
+      setEditProductId(product.id);
+      setEditedName(product.name);
+    };
+
+    const handleSave = (id) => {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, name: editedName } : p))
+      );
+      setEditProductId(null);
+      setEditedName('');
+    };
 
     useEffect(() => {
       fetchProducts();
@@ -82,6 +99,38 @@
           </tbody>
         </table>
         )}
+    
+      {products.length === 0 ? (
+        <p>No products yet.</p>
+      ) : (
+        products.map((product) => (
+          <Card key={product.id}>
+            <Card.Body>
+              {editProductId === product.id ? (
+                <>
+                  <Form.Control
+                    type="text"
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                  />
+                  <Button
+                    onClick={() => handleSave(product.id)}
+                  >
+                    Save
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Card.Title>{product.name}</Card.Title>
+                  <Button onClick={() => handleEdit(product)}>
+                    Edit
+                  </Button>
+                </>
+              )}
+            </Card.Body>
+          </Card>
+        ))
+      )}
       </Layout>
     );
   }
